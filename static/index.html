@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090b16">
+  <title>Audio Split AI</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #090b16;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+      margin: auto;
+      padding: 20px 16px 50px;
+    }
+
+    header {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .logo {
+      width: 90px;
+      height: 90px;
+      margin: auto;
+      border-radius: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #7c3aed, #2563eb);
+      box-shadow: 0 15px 35px rgba(0,0,0,.35);
+    }
+
+    .logo svg {
+      width: 62px;
+      height: 62px;
+    }
+
+    h1 {
+      margin: 15px 0 5px;
+      font-size: 30px;
+    }
+
+    header p {
+      margin: 0;
+      color: #aeb3c7;
+    }
+
+    .card {
+      background: #121525;
+      border: 1px solid #292e47;
+      border-radius: 22px;
+      padding: 18px;
+      margin-top: 15px;
+    }
+
+    .upload {
+      display: block;
+      text-align: center;
+      border: 2px dashed #454b6c;
+      border-radius: 20px;
+      padding: 30px 15px;
+      cursor: pointer;
+    }
+
+    .upload-icon {
+      font-size: 45px;
+    }
+
+    .upload h2 {
+      font-size: 19px;
+      margin: 10px 0;
+    }
+
+    .upload p {
+      color: #9ca3b8;
+      font-size: 14px;
+    }
+
+    #audioFile {
+      display: none;
+    }
+
+    #filename {
+      margin-top: 12px;
+      color: #c4b5fd;
+      word-break: break-word;
+    }
+
+    .modes {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mode {
+      padding: 17px 12px;
+      border-radius: 17px;
+      background: #191d30;
+      border: 2px solid #292e47;
+      color: white;
+      cursor: pointer;
+      text-align: center;
+    }
+
+    .mode.active {
+      border-color: #8b5cf6;
+      background: #241c40;
+    }
+
+    .mode strong {
+      display: block;
+      margin-bottom: 7px;
+    }
+
+    .mode small {
+      color: #9ca3b8;
+    }
+
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 16px;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #separateBtn {
+      margin-top: 15px;
+      background: #7c3aed;
+      color: white;
+    }
+
+    #separateBtn:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    #progressBox {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .progress {
+      height: 10px;
+      background: #272c40;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    #progressBar {
+      height: 100%;
+      width: 0%;
+      background: #8b5cf6;
+      transition: width .3s;
+    }
+
+    #status {
+      text-align: center;
+      color: #aeb3c7;
+      margin-top: 9px;
+      font-size: 14px;
+    }
+
+    #error {
+      color: #fca5a5;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    #results {
+      display: none;
+    }
+
+    .result {
+      margin-top: 12px;
+      padding: 14px;
+      border-radius: 18
