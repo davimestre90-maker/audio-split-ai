@@ -189,4 +189,356 @@
     .result {
       margin-top: 12px;
       padding: 14px;
-      border-radius: 18
+      border-radius: 18px;
+      background: #191d2e;
+    }
+
+    .result h3 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+
+    audio {
+      width: 100%;
+    }
+
+    .download {
+      margin-top: 9px;
+      background: #292f46;
+      color: white;
+      font-size: 14px;
+    }
+
+    #downloadAll {
+      margin-top: 14px;
+      background: #16a34a;
+      color: white;
+    }
+
+    @media (max-width: 480px) {
+      .modes {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 27px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header>
+
+      <div class="logo">
+        <svg viewBox="0 0 64 64" fill="none">
+          <path
+            d="M17 37V27M25 43V21M33 48V16M41 42V22M49 35V29"
+            stroke="white"
+            stroke-width="5"
+            stroke-linecap="round"
+          />
+          <circle
+            cx="32"
+            cy="32"
+            r="28"
+            stroke="white"
+            stroke-opacity=".25"
+            stroke-width="2"
+          />
+        </svg>
+      </div>
+
+      <h1>Audio Split AI</h1>
+      <p>Separe voz e instrumentos usando IA</p>
+
+    </header>
+
+    <section class="card">
+
+      <label class="upload" for="audioFile">
+
+        <div class="upload-icon">🎧</div>
+
+        <h2>Escolha sua música</h2>
+
+        <p>
+          MP3, WAV, M4A, FLAC e outros formatos de áudio
+        </p>
+
+        <input
+          id="audioFile"
+          type="file"
+          accept="audio/*"
+        >
+
+        <div id="filename">
+          Nenhum arquivo selecionado
+        </div>
+
+      </label>
+
+    </section>
+
+    <section class="card">
+
+      <h3>Tipo de separação</h3>
+
+      <div class="modes">
+
+        <div class="mode active" data-mode="simple">
+          <strong>🎤 Simples</strong>
+          <small>Voz + instrumentos</small>
+        </div>
+
+        <div class="mode" data-mode="detailed">
+          <strong>🎸 Detalhada</strong>
+          <small>Voz, bateria, baixo, guitarra, piano...</small>
+        </div>
+
+      </div>
+
+      <button id="separateBtn" disabled>
+        🚀 Separar música
+      </button>
+
+      <div id="progressBox">
+
+        <div class="progress">
+          <div id="progressBar"></div>
+        </div>
+
+        <div id="status">
+          Preparando...
+        </div>
+
+      </div>
+
+      <div id="error"></div>
+
+    </section>
+
+    <section class="card" id="results">
+
+      <h3>🎶 Faixas separadas</h3>
+
+      <div id="resultsList"></div>
+
+      <button id="downloadAll">
+        📦 Baixar todas
+      </button>
+
+    </section>
+
+  </div>
+
+<script>
+
+const audioFile = document.getElementById("audioFile");
+const filename = document.getElementById("filename");
+const separateBtn = document.getElementById("separateBtn");
+const progressBox = document.getElementById("progressBox");
+const progressBar = document.getElementById("progressBar");
+const status = document.getElementById("status");
+const errorBox = document.getElementById("error");
+const results = document.getElementById("results");
+const resultsList = document.getElementById("resultsList");
+const downloadAll = document.getElementById("downloadAll");
+
+let selectedFile = null;
+let selectedMode = "simple";
+let stems = [];
+
+const stemNames = {
+  vocals: "🎤 Voz",
+  instruments: "🎼 Instrumentos",
+  drums: "🥁 Bateria",
+  bass: "🎸 Baixo",
+  guitar: "🎸 Guitarra",
+  piano: "🎹 Piano",
+  other: "🎵 Outros"
+};
+
+audioFile.addEventListener("change", function() {
+
+  selectedFile = this.files[0] || null;
+
+  if (selectedFile) {
+    filename.textContent = selectedFile.name;
+    separateBtn.disabled = false;
+  } else {
+    filename.textContent = "Nenhum arquivo selecionado";
+    separateBtn.disabled = true;
+  }
+
+});
+
+document.querySelectorAll(".mode").forEach(function(modeButton) {
+
+  modeButton.addEventListener("click", function() {
+
+    document.querySelectorAll(".mode").forEach(function(button) {
+      button.classList.remove("active");
+    });
+
+    this.classList.add("active");
+
+    selectedMode = this.dataset.mode;
+
+  });
+
+});
+
+separateBtn.addEventListener("click", async function() {
+
+  if (!selectedFile) {
+    return;
+  }
+
+  errorBox.textContent = "";
+  results.style.display = "none";
+  resultsList.innerHTML = "";
+
+  progressBox.style.display = "block";
+
+  separateBtn.disabled = true;
+
+  progressBar.style.width = "10%";
+  status.textContent = "Enviando música...";
+
+  const formData = new FormData();
+
+  formData.append("audio", selectedFile);
+  formData.append("mode", selectedMode);
+
+  try {
+
+    progressBar.style.width = "30%";
+    status.textContent = "A IA está processando o áudio...";
+
+    const response = await fetch("/api/separate", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.error || "Não foi possível separar a música."
+      );
+    }
+
+    progressBar.style.width = "100%";
+    status.textContent = "Separação concluída!";
+
+    stems = data.stems || [];
+
+    showResults();
+
+  } catch (error) {
+
+    progressBar.style.width = "0%";
+
+    errorBox.textContent = "❌ " + error.message;
+
+    status.textContent = "Ocorreu um erro.";
+
+  } finally {
+
+    separateBtn.disabled = false;
+
+  }
+
+});
+
+function showResults() {
+
+  resultsList.innerHTML = "";
+
+  stems.forEach(function(stem) {
+
+    const box = document.createElement("div");
+    box.className = "result";
+
+    const title = document.createElement("h3");
+    title.textContent = stemNames[stem.name] || stem.name;
+
+    const player = document.createElement("audio");
+    player.controls = true;
+    player.src = stem.url;
+
+    const button = document.createElement("button");
+    button.className = "download";
+    button.textContent =
+      "⬇️ Baixar " + (stemNames[stem.name] || stem.name);
+
+    button.addEventListener("click", function() {
+      downloadFile(stem.url, stem.name + ".wav");
+    });
+
+    box.appendChild(title);
+    box.appendChild(player);
+    box.appendChild(button);
+
+    resultsList.appendChild(box);
+
+  });
+
+  results.style.display = "block";
+
+}
+
+async function downloadFile(url, name) {
+
+  try {
+
+    const response = await fetch(url);
+
+    const blob = await response.blob();
+
+    const link = document.createElement("a");
+
+    link.href = URL.createObjectURL(blob);
+    link.download = name;
+
+    document.body.appendChild(link);
+
+    link.click();
+
+    link.remove();
+
+    URL.revokeObjectURL(link.href);
+
+  } catch (error) {
+
+    alert("Não foi possível baixar o arquivo.");
+
+  }
+
+}
+
+downloadAll.addEventListener("click", async function() {
+
+  for (const stem of stems) {
+
+    await downloadFile(
+      stem.url,
+      stem.name + ".wav"
+    );
+
+    await new Promise(function(resolve) {
+      setTimeout(resolve, 500);
+    });
+
+  }
+
+});
+
+</script>
+
+</body>
+  </html>
