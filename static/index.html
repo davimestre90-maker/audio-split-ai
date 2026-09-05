@@ -1,187 +1,1321 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#090b16">
-  <title>Audio Split AI</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090b16">
+<title>Audio Split AI</title>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+* {
+  box-sizing: border-box;
+}
 
-    html,
-    body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      background: #090b16;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-    }
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  background: #090b16;
+  color: white;
+  font-family: Arial, sans-serif;
+}
 
-    #loading {
-      position: fixed;
-      inset: 0;
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #090b16;
-      transition: opacity 0.6s ease;
-    }
+body {
+  overflow-x: hidden;
+}
 
-    #loading.hide {
-      opacity: 0;
-      pointer-events: none;
-    }
+/* =========================
+   TELA DE CARREGAMENTO
+========================= */
 
-    .logo {
-      width: 105px;
-      height: 105px;
-      border-radius: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #7c3aed, #2563eb);
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.45);
-      animation: pulse 1.5s infinite ease-in-out;
-    }
+#loading {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #090b16;
+  transition: opacity .6s ease;
+}
 
-    .logo svg {
-      width: 70px;
-      height: 70px;
-    }
+#loading.hide {
+  opacity: 0;
+  pointer-events: none;
+}
 
-    .title {
-      margin-top: 22px;
-      color: white;
-      font-size: 27px;
-      font-weight: bold;
-      letter-spacing: 1px;
-    }
+.loading-logo {
+  width: 105px;
+  height: 105px;
+  border-radius: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+  box-shadow: 0 15px 40px rgba(0,0,0,.45);
+  animation: loadingPulse 1.5s infinite ease-in-out;
+}
 
-    .loading-text {
-      margin-top: 12px;
-      color: #aeb3c7;
-      font-size: 16px;
-    }
+.loading-logo svg {
+  width: 70px;
+  height: 70px;
+}
 
-    .dots::after {
-      content: "";
-      animation: dots 1.4s infinite;
-    }
+.loading-title {
+  margin-top: 22px;
+  font-size: 27px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
 
-    @keyframes dots {
-      0% {
-        content: "";
-      }
+.loading-text {
+  margin-top: 12px;
+  color: #aeb3c7;
+  font-size: 16px;
+}
 
-      25% {
-        content: ".";
-      }
+.loading-dots::after {
+  content: "";
+  animation: dots 1.4s infinite;
+}
 
-      50% {
-        content: "..";
-      }
+@keyframes dots {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75%, 100% { content: "..."; }
+}
 
-      75%,
-      100% {
-        content: "...";
-      }
-    }
+@keyframes loadingPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
 
-    @keyframes pulse {
-      0%,
-      100% {
-        transform: scale(1);
-      }
+  50% {
+    transform: scale(1.06);
+  }
+}
 
-      50% {
-        transform: scale(1.06);
-      }
-    }
+/* =========================
+   APLICATIVO
+========================= */
 
-    #app {
-      min-height: 100%;
-      overflow-y: auto;
-      background: #090b16;
-      color: white;
-    }
-  </style>
+#app {
+  display: none;
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+.container {
+  width: 100%;
+  max-width: 760px;
+  margin: auto;
+  padding: 18px 15px 40px;
+}
+
+/* HEADER */
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 2px 20px;
+}
+
+.small-logo {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #7c3aed, #2563eb);
+}
+
+.small-logo svg {
+  width: 34px;
+  height: 34px;
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.header-subtitle {
+  color: #969db4;
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+/* CARD */
+
+.card {
+  background: #121525;
+  border: 1px solid #292e47;
+  border-radius: 22px;
+  padding: 18px;
+  margin-bottom: 15px;
+}
+
+/* UPLOAD */
+
+.upload {
+  display: block;
+  border: 2px dashed #454b6c;
+  border-radius: 20px;
+  padding: 28px 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.upload:active {
+  transform: scale(.99);
+}
+
+.upload-icon {
+  font-size: 43px;
+}
+
+.upload h2 {
+  margin: 10px 0 7px;
+  font-size: 19px;
+}
+
+.upload p {
+  margin: 0;
+  color: #9ca3b8;
+  font-size: 13px;
+}
+
+#audioFile {
+  display: none;
+}
+
+#filename {
+  margin-top: 13px;
+  color: #c4b5fd;
+  word-break: break-word;
+  font-size: 14px;
+}
+
+/* SNAP */
+
+.snap-card {
+  background: linear-gradient(135deg, #191d31, #15192a);
+}
+
+.snap-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.snap-text {
+  color: #9ca3b8;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 7px 0 14px;
+}
+
+.snap-button {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border-radius: 15px;
+  background: #292f46;
+  color: white;
+  text-decoration: none;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* MODOS */
+
+.section-title {
+  margin: 0 0 13px;
+  font-size: 17px;
+}
+
+.modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.mode {
+  padding: 17px 12px;
+  border-radius: 17px;
+  background: #191d30;
+  border: 2px solid #292e47;
+  color: white;
+  cursor: pointer;
+  text-align: center;
+}
+
+.mode.active {
+  border-color: #8b5cf6;
+  background: #241c40;
+}
+
+.mode strong {
+  display: block;
+  margin-bottom: 7px;
+}
+
+.mode small {
+  color: #9ca3b8;
+  line-height: 1.3;
+}
+
+/* BOTÃO */
+
+#separateBtn {
+  width: 100%;
+  border: 0;
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 15px;
+  background: #7c3aed;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+#separateBtn:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+/* PROGRESSO */
+
+#progressBox {
+  display: none;
+  margin-top: 18px;
+}
+
+.progress {
+  width: 100%;
+  height: 9px;
+  background: #272c40;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+#progressBar {
+  width: 0%;
+  height: 100%;
+  background: #8b5cf6;
+  transition: width .3s;
+}
+
+#status {
+  margin-top: 9px;
+  text-align: center;
+  color: #aeb3c7;
+  font-size: 13px;
+}
+
+#error {
+  margin-top: 12px;
+  color: #fca5a5;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* PLAYER PRINCIPAL */
+
+#mainPlayer {
+  display: none;
+}
+
+.song-name {
+  font-size: 18px;
+  font-weight: bold;
+  word-break: break-word;
+  margin-bottom: 12px;
+}
+
+audio {
+  width: 100%;
+}
+
+/* MIXER */
+
+#results {
+  display: none;
+}
+
+.mixer-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.mixer-title h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.stem {
+  background: #191d2e;
+  border-radius: 18px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
+.stem-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stem-name {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.mute {
+  width: 40px;
+  height: 36px;
+  border: 0;
+  border-radius: 11px;
+  background: #292f46;
+  color: white;
+  cursor: pointer;
+}
+
+.mute.muted {
+  background: #7c3aed;
+}
+
+.volume-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 11px;
+}
+
+.volume-icon {
+  font-size: 15px;
+}
+
+.volume {
+  width: 100%;
+  accent-color: #8b5cf6;
+}
+
+.download {
+  width: 100%;
+  border: 0;
+  border-radius: 12px;
+  padding: 11px;
+  margin-top: 11px;
+  background: #292f46;
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+#downloadAll {
+  width: 100%;
+  border: 0;
+  border-radius: 15px;
+  padding: 14px;
+  margin-top: 14px;
+  background: #16a34a;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* RESPONSIVO */
+
+@media (max-width: 500px) {
+
+  .modes {
+    grid-template-columns: 1fr;
+  }
+
+  .container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+}
+</style>
 </head>
 
 <body>
 
-  <!-- TELA DE CARREGAMENTO -->
+<!-- =========================
+     LOADING
+========================= -->
 
-  <div id="loading">
+<div id="loading">
 
-    <div class="logo">
+  <div class="loading-logo">
 
-      <svg viewBox="0 0 64 64" fill="none">
+    <svg viewBox="0 0 64 64" fill="none">
 
-        <path
-          d="M17 37V27M25 43V21M33 48V16M41 42V22M49 35V29"
-          stroke="white"
-          stroke-width="5"
-          stroke-linecap="round"
-        />
+      <path
+        d="M17 37V27M25 43V21M33 48V16M41 42V22M49 35V29"
+        stroke="white"
+        stroke-width="5"
+        stroke-linecap="round"
+      />
 
-        <circle
-          cx="32"
-          cy="32"
-          r="28"
-          stroke="white"
-          stroke-opacity=".25"
-          stroke-width="2"
-        />
+      <circle
+        cx="32"
+        cy="32"
+        r="28"
+        stroke="white"
+        stroke-opacity=".25"
+        stroke-width="2"
+      />
 
-      </svg>
-
-    </div>
-
-    <div class="title">
-      AUDIO SPLIT AI
-    </div>
-
-    <div class="loading-text">
-      Carregando<span class="dots"></span>
-    </div>
+    </svg>
 
   </div>
 
+  <div class="loading-title">
+    AUDIO SPLIT AI
+  </div>
 
-  <!-- APLICATIVO -->
+  <div class="loading-text">
+    Carregando<span class="loading-dots"></span>
+  </div>
 
-  <div id="app">
+</div>
 
-    <!-- A interface principal será colocada aqui nas próximas etapas. -->
+
+<!-- =========================
+     APP
+========================= -->
+
+<div id="app">
+
+  <div class="container">
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+      <div class="small-logo">
+
+        <svg viewBox="0 0 64 64" fill="none">
+
+          <path
+            d="M17 37V27M25 43V21M33 48V16M41 42V22M49 35V29"
+            stroke="white"
+            stroke-width="5"
+            stroke-linecap="round"
+          />
+
+          <circle
+            cx="32"
+            cy="32"
+            r="28"
+            stroke="white"
+            stroke-opacity=".25"
+            stroke-width="2"
+          />
+
+        </svg>
+
+      </div>
+
+      <div>
+
+        <div class="header-title">
+          Audio Split AI
+        </div>
+
+        <div class="header-subtitle">
+          Separação de áudio com inteligência artificial
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- UPLOAD -->
+
+    <section class="card">
+
+      <label class="upload" for="audioFile">
+
+        <div class="upload-icon">
+          🎧
+        </div>
+
+        <h2>
+          Escolha sua música
+        </h2>
+
+        <p>
+          Toque aqui para selecionar um arquivo de áudio
+        </p>
+
+        <input
+          id="audioFile"
+          type="file"
+          accept="audio/*"
+        >
+
+        <div id="filename">
+          Nenhum arquivo selecionado
+        </div>
+
+      </label>
+
+    </section>
+
+
+    <!-- SNAPCHAT / SNAPTUBE -->
+
+    <section class="card snap-card">
+
+      <div class="snap-title">
+        📥 Ainda não tem a música?
+      </div>
+
+      <div class="snap-text">
+        Você pode baixar a música primeiro e depois enviá-la para o Audio Split AI.
+      </div>
+
+      <a
+        class="snap-button"
+        href="https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.snaptube.com/pt/&ved=2ahUKEwj2woj169eWAxUllZUCHeb6Cj8QFnoECBAQAQ&usg=AOvVaw0GnpsEVRUndKEIJ_Cjqbvh"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        📲 Abrir SnapTube
+      </a>
+
+    </section>
+
+
+    <!-- MODO -->
+
+    <section class="card">
+
+      <h3 class="section-title">
+        Como você quer separar?
+      </h3>
+
+      <div class="modes">
+
+        <div
+          class="mode active"
+          data-mode="simple"
+        >
+
+          <strong>
+            🎤 Vocal + Instrumental
+          </strong>
+
+          <small>
+            Separa a voz dos instrumentos
+          </small>
+
+        </div>
+
+
+        <div
+          class="mode"
+          data-mode="detailed"
+        >
+
+          <strong>
+            🎛️ Stems completos
+          </strong>
+
+          <small>
+            Voz, bateria, baixo, guitarra, piano e outros
+          </small>
+
+        </div>
+
+      </div>
+
+
+      <button
+        id="separateBtn"
+        disabled
+      >
+        🚀 Separar música
+      </button>
+
+
+      <div id="progressBox">
+
+        <div class="progress">
+
+          <div id="progressBar"></div>
+
+        </div>
+
+        <div id="status">
+          Preparando...
+        </div>
+
+      </div>
+
+
+      <div id="error"></div>
+
+    </section>
+
+
+    <!-- PLAYER PRINCIPAL -->
+
+    <section
+      class="card"
+      id="mainPlayer"
+    >
+
+      <div
+        class="song-name"
+        id="songName"
+      ></div>
+
+      <audio
+        id="originalAudio"
+        controls
+      ></audio>
+
+    </section>
+
+
+    <!-- MIXER -->
+
+    <section
+      class="card"
+      id="results"
+    >
+
+      <div class="mixer-title">
+
+        <h3>
+          🎚️ Mixer
+        </h3>
+
+      </div>
+
+      <div id="resultsList"></div>
+
+      <button id="downloadAll">
+        ⬇️ Baixar todas as faixas
+      </button>
+
+    </section>
 
   </div>
 
+</div>
 
-  <script>
 
-    window.addEventListener("load", function() {
+<script>
 
-      setTimeout(function() {
+/* =========================
+   ELEMENTOS
+========================= */
 
-        const loading = document.getElementById("loading");
+const loading =
+  document.getElementById("loading");
 
-        loading.classList.add("hide");
+const app =
+  document.getElementById("app");
 
-        setTimeout(function() {
-          loading.style.display = "none";
-        }, 600);
+const audioFile =
+  document.getElementById("audioFile");
 
-      }, 1800);
+const filename =
+  document.getElementById("filename");
 
-    });
+const separateBtn =
+  document.getElementById("separateBtn");
 
-  </script>
+const progressBox =
+  document.getElementById("progressBox");
+
+const progressBar =
+  document.getElementById("progressBar");
+
+const status =
+  document.getElementById("status");
+
+const errorBox =
+  document.getElementById("error");
+
+const results =
+  document.getElementById("results");
+
+const resultsList =
+  document.getElementById("resultsList");
+
+const mainPlayer =
+  document.getElementById("mainPlayer");
+
+const originalAudio =
+  document.getElementById("originalAudio");
+
+const songName =
+  document.getElementById("songName");
+
+const downloadAll =
+  document.getElementById("downloadAll");
+
+
+/* =========================
+   VARIÁVEIS
+========================= */
+
+let selectedFile = null;
+
+let selectedMode = "simple";
+
+let stems = [];
+
+
+/* =========================
+   NOMES
+========================= */
+
+const stemNames = {
+
+  vocals: "🎤 Voz",
+
+  instruments: "🎼 Instrumental",
+
+  drums: "🥁 Bateria",
+
+  bass: "🎸 Baixo",
+
+  guitar: "🎸 Guitarra",
+
+  piano: "🎹 Piano",
+
+  other: "🎵 Outros"
+
+};
+
+
+/* =========================
+   TELA DE CARREGAMENTO
+========================= */
+
+window.addEventListener("load", function() {
+
+  setTimeout(function() {
+
+    loading.classList.add("hide");
+
+    app.style.display = "block";
+
+    setTimeout(function() {
+
+      loading.style.display = "none";
+
+    }, 600);
+
+  }, 1800);
+
+});
+
+
+/* =========================
+   ESCOLHER ÁUDIO
+========================= */
+
+audioFile.addEventListener(
+  "change",
+  function() {
+
+    selectedFile =
+      this.files[0] || null;
+
+    if (selectedFile) {
+
+      filename.textContent =
+        selectedFile.name;
+
+      separateBtn.disabled = false;
+
+      mainPlayer.style.display =
+        "block";
+
+      songName.textContent =
+        selectedFile.name;
+
+      originalAudio.src =
+        URL.createObjectURL(selectedFile);
+
+    } else {
+
+      filename.textContent =
+        "Nenhum arquivo selecionado";
+
+      separateBtn.disabled = true;
+
+      mainPlayer.style.display =
+        "none";
+
+    }
+
+  }
+);
+
+
+/* =========================
+   ESCOLHER MODO
+========================= */
+
+document
+  .querySelectorAll(".mode")
+  .forEach(function(modeButton) {
+
+    modeButton.addEventListener(
+      "click",
+      function() {
+
+        document
+          .querySelectorAll(".mode")
+          .forEach(function(button) {
+
+            button.classList.remove(
+              "active"
+            );
+
+          });
+
+        this.classList.add("active");
+
+        selectedMode =
+          this.dataset.mode;
+
+      }
+    );
+
+  });
+
+
+/* =========================
+   SEPARAR
+========================= */
+
+separateBtn.addEventListener(
+  "click",
+  async function() {
+
+    if (!selectedFile) {
+      return;
+    }
+
+    errorBox.textContent = "";
+
+    results.style.display = "none";
+
+    resultsList.innerHTML = "";
+
+    progressBox.style.display =
+      "block";
+
+    separateBtn.disabled = true;
+
+    progressBar.style.width = "10%";
+
+    status.textContent =
+      "Enviando música...";
+
+
+    const formData =
+      new FormData();
+
+    formData.append(
+      "audio",
+      selectedFile
+    );
+
+    formData.append(
+      "mode",
+      selectedMode
+    );
+
+
+    try {
+
+      progressBar.style.width =
+        "30%";
+
+      status.textContent =
+        "A IA está separando o áudio...";
+
+
+      const response =
+        await fetch(
+          "/api/separate",
+          {
+            method: "POST",
+            body: formData
+          }
+        );
+
+
+      const data =
+        await response.json();
+
+
+      if (
+        !response.ok ||
+        !data.success
+      ) {
+
+        throw new Error(
+          data.error ||
+          "Não foi possível separar a música."
+        );
+
+      }
+
+
+      progressBar.style.width =
+        "100%";
+
+      status.textContent =
+        "Separação concluída!";
+
+
+      stems =
+        data.stems || [];
+
+
+      showResults();
+
+
+    } catch (error) {
+
+      progressBar.style.width =
+        "0%";
+
+      status.textContent =
+        "Ocorreu um erro.";
+
+      errorBox.textContent =
+        "❌ " + error.message;
+
+
+    } finally {
+
+      separateBtn.disabled =
+        false;
+
+    }
+
+  }
+);
+
+
+/* =========================
+   MOSTRAR MIXER
+========================= */
+
+function showResults() {
+
+  resultsList.innerHTML = "";
+
+
+  stems.forEach(function(stem) {
+
+    const box =
+      document.createElement("div");
+
+    box.className =
+      "stem";
+
+
+    const top =
+      document.createElement("div");
+
+    top.className =
+      "stem-top";
+
+
+    const name =
+      document.createElement("div");
+
+    name.className =
+      "stem-name";
+
+    name.textContent =
+      stemNames[stem.name] ||
+      stem.name;
+
+
+    const mute =
+      document.createElement("button");
+
+    mute.className =
+      "mute";
+
+    mute.textContent =
+      "🔊";
+
+
+    const player =
+      document.createElement("audio");
+
+    player.controls =
+      true;
+
+    player.src =
+      stem.url;
+
+
+    const volumeRow =
+      document.createElement("div");
+
+    volumeRow.className =
+      "volume-row";
+
+
+    const volumeIcon =
+      document.createElement("span");
+
+    volumeIcon.className =
+      "volume-icon";
+
+    volumeIcon.textContent =
+      "🔈";
+
+
+    const volume =
+      document.createElement("input");
+
+    volume.className =
+      "volume";
+
+    volume.type =
+      "range";
+
+    volume.min =
+      "0";
+
+    volume.max =
+      "1";
+
+    volume.step =
+      "0.01";
+
+    volume.value =
+      "1";
+
+
+    volume.addEventListener(
+      "input",
+      function() {
+
+        player.volume =
+          Number(this.value);
+
+      }
+    );
+
+
+    mute.addEventListener(
+      "click",
+      function() {
+
+        if (player.muted) {
+
+          player.muted = false;
+
+          mute.textContent =
+            "🔊";
+
+          mute.classList.remove(
+            "muted"
+          );
+
+        } else {
+
+          player.muted = true;
+
+          mute.textContent =
+            "🔇";
+
+          mute.classList.add(
+            "muted"
+          );
+
+        }
+
+      }
+    );
+
+
+    const download =
+      document.createElement("button");
+
+    download.className =
+      "download";
+
+    download.textContent =
+      "⬇️ Baixar faixa";
+
+
+    download.addEventListener(
+      "click",
+      function() {
+
+        downloadFile(
+          stem.url,
+          stem.name + ".wav"
+        );
+
+      }
+    );
+
+
+    top.appendChild(name);
+
+    top.appendChild(mute);
+
+
+    volumeRow.appendChild(
+      volumeIcon
+    );
+
+    volumeRow.appendChild(
+      volume
+    );
+
+
+    box.appendChild(top);
+
+    box.appendChild(player);
+
+    box.appendChild(volumeRow);
+
+    box.appendChild(download);
+
+
+    resultsList.appendChild(box);
+
+  });
+
+
+  results.style.display =
+    "block";
+
+
+  results.scrollIntoView({
+    behavior: "smooth"
+  });
+
+}
+
+
+/* =========================
+   DOWNLOAD
+========================= */
+
+async function downloadFile(
+  url,
+  name
+) {
+
+  try {
+
+    const response =
+      await fetch(url);
+
+    const blob =
+      await response.blob();
+
+    const link =
+      document.createElement("a");
+
+    const objectUrl =
+      URL.createObjectURL(blob);
+
+    link.href =
+      objectUrl;
+
+    link.download =
+      name;
+
+    document.body.appendChild(
+      link
+    );
+
+    link.click();
+
+    link.remove();
+
+    setTimeout(function() {
+
+      URL.revokeObjectURL(
+        objectUrl
+      );
+
+    }, 1000);
+
+
+  } catch (error) {
+
+    alert(
+      "Não foi possível baixar o arquivo."
+    );
+
+  }
+
+}
+
+
+/* =========================
+   BAIXAR TODAS
+========================= */
+
+downloadAll.addEventListener(
+  "click",
+  async function() {
+
+    for (
+      const stem of stems
+    ) {
+
+      await downloadFile(
+        stem.url,
+        stem.name + ".wav"
+      );
+
+      await new Promise(
+        function(resolve) {
+
+          setTimeout(
+            resolve,
+            500
+          );
+
+        }
+      );
+
+    }
+
+  }
+);
+
+</script>
 
 </body>
-</html>
+  </html>
